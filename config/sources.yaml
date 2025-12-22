@@ -1,0 +1,25 @@
+# News sources configuration
+scrape_interval_minutes: 240
+retention_days: 7
+
+sources:
+  - name: "Hacker News"
+    url: "https://news.ycombinator.com"
+    type: "hackernews"
+    enabled: true
+
+  - name: "BBC News"
+    url: "https://feeds.bbci.co.uk/news/rss.xml"
+    type: "rss"
+    enabled: true
+
+  - name: "Reuters World"
+    url: "https://www.reutersagency.com/feed/?best-topics=world"
+    type: "rss"
+    enabled: true
+
+# LLM Configuration
+llm:
+  host: "192.168.50.27"
+  port: 11434
+  model: "gpt-oss:20b"

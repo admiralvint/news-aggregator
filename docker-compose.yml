@@ -1,0 +1,30 @@
+services:
+  scraper:
+    build: .
+    container_name: news-scraper
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config:ro
+    environment:
+      - TZ=Europe/Tallinn
+    networks:
+      - news-network
+
+  web:
+    build: .
+    container_name: news-web
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data:ro
+    environment:
+      - TZ=Europe/Tallinn
+    command: python -u scraper/web.py
+    networks:
+      - news-network
+
+networks:
+  news-network:
+    driver: bridge
