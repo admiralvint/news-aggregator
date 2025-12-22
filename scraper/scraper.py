@@ -33,6 +33,17 @@ def load_config():
         return yaml.safe_load(f)
 
 
+def is_ollama_available(config: dict) -> bool:
+    """Check if Ollama server is reachable and ready."""
+    llm_config = config['llm']
+    url = f"http://{llm_config['host']}:{llm_config['port']}/api/tags"
+    try:
+        response = requests.get(url, timeout=5)
+        return response.status_code == 200
+    except:
+        return False
+
+
 def init_database():
     """Initialize SQLite database."""
     conn = sqlite3.connect(DB_PATH)
@@ -87,6 +98,7 @@ def save_article(source: str, title: str, url: str, content: str):
     logger.info(f"Saved new article: {title[:50]}...")
     return article_id
 
+
 def fetch_article_content(url: str) -> str | None:
     """
     Fetch article content, trying paywall bypass methods if needed.
@@ -96,7 +108,7 @@ def fetch_article_content(url: str) -> str | None:
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
-        'Referer': 'https://www.google.com/',  # Some sites allow Google referrers
+        'Referer': 'https://www.google.com/',
     }
     
     def extract_text(html: str) -> str | None:
@@ -107,7 +119,7 @@ def fetch_article_content(url: str) -> str | None:
         paragraphs = soup.find_all('p')
         if paragraphs:
             text = ' '.join(p.get_text().strip() for p in paragraphs[:30])
-            if len(text) > 200:  # Only return if we got meaningful content
+            if len(text) > 200:
                 return text
         return None
     
@@ -189,12 +201,13 @@ def fetch_article_content(url: str) -> str | None:
     except:
         return None
 
+
 def fetch_rss_feed(source: dict) -> list:
     """Fetch articles from RSS feed."""
     articles = []
     try:
         feed = feedparser.parse(source['url'])
-        for entry in feed.entries[:10]:  # Limit to 10 most recent
+        for entry in feed.entries[:10]:
             title = entry.get('title', 'No title')
             url = entry.get('link', '')
             
@@ -267,7 +280,7 @@ def summarize_with_ollama(article: dict, config: dict) -> str:
     llm_config = config['llm']
     url = f"http://{llm_config['host']}:{llm_config['port']}/api/generate"
     
-    prompt = f"""Summarize the following news article in 2-3 concise sentences. Focus on the key facts and main points.
+    prompt = f"""Summarize the following news article in 4-5 concise sentences. Focus on the key facts and main points.
 
 Title: {article['title']}
 
@@ -281,8 +294,8 @@ Summary:"""
             'prompt': prompt,
             'stream': False,
             'options': {
-                'temperature': 0.3,
-                'num_predict': 200
+                'temperature': 0.2,
+                'num_predict': 400
             }
         }, timeout=120)
         
@@ -322,6 +335,40 @@ def cleanup_old_articles(retention_days: int):
         logger.info(f"Cleaned up {deleted} old articles")
 
 
+def retry_failed_summaries(config: dict, limit: int = 10):
+    """Retry summarization for articles that don't have summaries."""
+    if not is_ollama_available(config):
+        logger.info("Ollama not available - skipping retry of failed summaries")
+        return
+    
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, title, content FROM articles WHERE summary IS NULL LIMIT ?",
+        (limit,)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    
+    if not rows:
+        return
+    
+    logger.info(f"Retrying {len(rows)} articles without summaries...")
+    
+    for row in rows:
+        article = {
+            'title': row['title'],
+            'content': row['content']
+        }
+        logger.info(f"Retrying: {row['title'][:50]}...")
+        summary = summarize_with_ollama(article, config)
+        if summary:
+            update_summary(row['id'], summary)
+            logger.info(f"Summary: {summary[:100]}...")
+        time.sleep(2)
+
+
 def run_scrape_cycle(config: dict):
     """Run one complete scrape and summarize cycle."""
     logger.info("Starting scrape cycle...")
@@ -343,9 +390,14 @@ def run_scrape_cycle(config: dict):
             continue
         
         all_articles.extend(articles)
-        time.sleep(1)  # Be nice to servers
+        time.sleep(1)
     
     logger.info(f"Fetched {len(all_articles)} articles total")
+    
+    # Check if Ollama is available
+    ollama_available = is_ollama_available(config)
+    if not ollama_available:
+        logger.warning("Ollama not available - saving articles without summaries, will retry next cycle")
     
     # Save new articles and summarize
     new_count = 0
@@ -357,16 +409,18 @@ def run_scrape_cycle(config: dict):
             article['content']
         )
         
-        if article_id:  # New article
+        if article_id:
             new_count += 1
-            logger.info(f"Summarizing: {article['title'][:50]}...")
-            summary = summarize_with_ollama(article, config)
-            if summary:
-                update_summary(article_id, summary)
-                logger.info(f"Summary: {summary[:100]}...")
-            time.sleep(2)  # Don't overwhelm the LLM
+            if ollama_available:
+                logger.info(f"Summarizing: {article['title'][:50]}...")
+                summary = summarize_with_ollama(article, config)
+                if summary:
+                    update_summary(article_id, summary)
+                    logger.info(f"Summary: {summary[:100]}...")
+                time.sleep(2)
     
-    # Cleanup old articles
+    # Retry failed summaries and cleanup
+    retry_failed_summaries(config)
     cleanup_old_articles(config.get('retention_days', 7))
     
     logger.info(f"Cycle complete. {new_count} new articles processed.")
