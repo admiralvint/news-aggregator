@@ -16,29 +16,36 @@ HTML_TEMPLATE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>News Digest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
             max-width: 900px;
             margin: 0 auto;
             padding: 20px;
-            background: #f5f5f5;
-            color: #333;
+            background: #1a1a1a;
+            color: #e0d6cc;
         }
         h1 {
-            color: #2c3e50;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 10px;
+            font-family: 'Lora', Georgia, serif;
+            color: #d4a574;
+            border-bottom: 2px solid #4a3728;
+            padding-bottom: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
         .filters {
-            background: white;
+            background: #252525;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border: 1px solid #333;
         }
         .filters form {
             display: flex;
@@ -46,73 +53,116 @@ HTML_TEMPLATE = """
             flex-wrap: wrap;
             align-items: center;
         }
-        .filters select, .filters button {
-            padding: 8px 12px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
+        .filters label {
+            color: #a89888;
             font-size: 14px;
         }
+        .filters select, .filters button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            font-size: 14px;
+            font-family: 'Source Sans 3', sans-serif;
+            background: #333;
+            color: #e0d6cc;
+        }
+        .filters select:focus, .filters button:focus {
+            outline: none;
+            border-color: #d4a574;
+        }
         .filters button {
-            background: #3498db;
-            color: white;
+            background: #4a3728;
+            color: #e0d6cc;
             border: none;
             cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
         }
         .filters button:hover {
-            background: #2980b9;
+            background: #5c4633;
         }
         .stats {
-            color: #666;
+            color: #8b7355;
             font-size: 14px;
             margin-bottom: 15px;
         }
         .article {
-            background: white;
+            background: #252525;
             padding: 20px;
             margin-bottom: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            transition: border-color 0.2s, transform 0.2s;
         }
         .article:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            border-color: #4a3728;
+            transform: translateY(-2px);
         }
         .article h2 {
+            font-family: 'Lora', Georgia, serif;
             margin: 0 0 10px 0;
             font-size: 18px;
+            font-weight: 500;
+            line-height: 1.4;
         }
         .article h2 a {
-            color: #2c3e50;
+            color: #e8ddd0;
             text-decoration: none;
+            transition: color 0.2s;
         }
         .article h2 a:hover {
-            color: #3498db;
+            color: #d4a574;
         }
         .meta {
             font-size: 12px;
-            color: #888;
-            margin-bottom: 10px;
+            color: #7a6a5a;
+            margin-bottom: 12px;
         }
         .source {
-            background: #e8f4f8;
-            color: #2980b9;
-            padding: 2px 8px;
+            background: #3d2e22;
+            color: #d4a574;
+            padding: 3px 10px;
             border-radius: 4px;
             font-weight: 500;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .summary {
-            line-height: 1.6;
-            color: #444;
+            font-family: 'Lora', Georgia, serif;
+            line-height: 1.7;
+            color: #c4b8a8;
+            font-size: 15px;
         }
         .no-articles {
             text-align: center;
             padding: 40px;
-            color: #888;
+            color: #6a5a4a;
+            font-family: 'Lora', Georgia, serif;
+            font-style: italic;
         }
         .refresh-info {
             text-align: center;
-            color: #888;
+            color: #5a4a3a;
             font-size: 12px;
             margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a3728;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5c4633;
         }
     </style>
 </head>
