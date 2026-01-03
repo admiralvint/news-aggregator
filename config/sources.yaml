@@ -46,8 +46,27 @@ sources:
   - name: "Slashdot"
     url: "https://rss.slashdot.org/Slashdot/slashdotMain"
     type: "rss"
-    enabled: "true"  
+    enabled: "true"
 
+  - name: "PC Gamer"
+    url: "https://www.pcgamer.com/uk/feeds.xml"
+    type: "rss"
+    enabled: "true"
+
+  - name: "IGN"
+    url: "https://www.ign.com/rss/v2/articles/feed"
+    type: "rss"
+    enabled: "true"
+
+  - name: "Macrumors"
+    url: "https://feeds.macrumors.com/MacRumors-All"
+    type: "rss" 
+    enabled: "true"
+
+  - name: "9to5 Mac"
+    url: "https://9to5mac.com/web-stories/feed/"
+    type: "rss"
+    enabled: "true"
 
 
 # LLM Configuration
