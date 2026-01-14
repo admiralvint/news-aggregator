@@ -41,32 +41,32 @@ sources:
   - name: "Bleeping Computer"
     url: "https://www.bleepingcomputer.com/feed/"
     type: "rss"
-    enabled: "true"
+    enabled: true
 
   - name: "Slashdot"
     url: "https://rss.slashdot.org/Slashdot/slashdotMain"
     type: "rss"
-    enabled: "true"
+    enabled: true
 
   - name: "PC Gamer"
     url: "https://www.pcgamer.com/uk/feeds.xml"
     type: "rss"
-    enabled: "true"
+    enabled: true
 
   - name: "IGN"
     url: "https://www.ign.com/rss/v2/articles/feed"
     type: "rss"
-    enabled: "true"
+    enabled: true
 
   - name: "Macrumors"
     url: "https://feeds.macrumors.com/MacRumors-All"
     type: "rss" 
-    enabled: "true"
+    enabled: true
 
   - name: "9to5 Mac"
     url: "https://9to5mac.com/web-stories/feed/"
     type: "rss"
-    enabled: "true"
+    enabled: true
 
 
 # LLM Configuration
@@ -74,3 +74,4 @@ llm:
   host: "192.168.50.27"
   port: 11434
   model: "gpt-oss:20b"
+  summary_style: "standard"  # Options: brief, standard, detailed, bullets
